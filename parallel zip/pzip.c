@@ -9,6 +9,7 @@
 #include <sys/sysinfo.h>
 #include <unistd.h>
 #include <assert.h>
+#include "thread_assert.h" // includes the header file of the wrapper functions
 ///////////////////////////////////////////////////
 
 
@@ -29,37 +30,6 @@ pthread_mutex_t lock;
 pthread_cond_t empty , fill;
 int* pages_per_file;
 
-/////////////////////WRAPPER FUNCTIONS////////////////////////////
-// wrapper function are a way of making sure that our function calls work fine while also maintaining clean code 
-void Pthread_mutex_lock(pthread_mutex_t *mutex){
-int rc = pthread_mutex_lock(mutex);
-assert(rc ==0);
-}
-
-void Pthread_mutex_unlock(pthread_mutex_t *mutex){
-int rc = pthread_mutex_unlock(mutex);
-assert(rc ==0);
-}
-
-void Pthread_create(pthread_t *thread, const pthread_attr_t * attr, void * (*start_routine)(void*), void * arg){
-int rc = pthread_create(thread,attr,start_routine,arg);
-assert(rc ==0);
-}
-
-void Pthread_join(pthread_t thread, void **value_ptr){
-int rc=pthread_join(thread,value_ptr);
-assert(rc==0);
-}
-
-void Pthread_mutex_init(pthread_mutex_t *mutex, pthread_mutexattr_t * attr){
-int rc=pthread_mutex_init(mutex,attr);
-	assert(rc==0);
-	}
-	
-void Pthread_cond_init(pthread_cond_t *cond,pthread_condattr_t * attr){
-int rc=pthread_cond_init(cond,attr);
-	assert(rc==0);
-	}
 /////////////////////////////////////////////////////////
 
 /////////////////STRUCTURES///////////////////////////////
@@ -79,7 +49,6 @@ struct buffer {
     int last_page_size; //Page sized or (size_of_file)%page_size
 }buf[q_capacity];
 
-//Contains file specific data for munmap which remove memory mapping
 
 ////////////////////////////////////////////////////////
 
@@ -163,8 +132,8 @@ void* producer(void *arg){
 		for(int j=0;j<pages_in_file;j++){
 			Pthread_mutex_lock(&lock);
 			while(q_size==q_capacity){
-			    pthread_cond_broadcast(&fill); //if it's full Wake-up all the sleeping consumer threads.
-				pthread_cond_wait(&empty,&lock); //Call the consumer to start working on the queue.
+			    Pthread_cond_broadcast(&fill); //if it's full Wake-up all the sleeping consumer threads.
+				Pthread_cond_wait(&empty,&lock); //Call the consumer to start working on the queue.
 			}
 			Pthread_mutex_unlock(&lock);
 			struct buffer temp;
@@ -183,7 +152,7 @@ void* producer(void *arg){
 			Pthread_mutex_lock(&lock);
 			put(temp);
 			Pthread_mutex_unlock(&lock);
-			pthread_cond_signal(&fill);
+			Pthread_cond_signal(&fill);
 		}
 		
 		//Step 7: Close the file.
@@ -191,7 +160,7 @@ void* producer(void *arg){
 	}
 	//Possible race condition at isComplete?
 	isComplete=1; //When producer is done mapping.
-	pthread_cond_broadcast(&fill); //Wake-up all the sleeping consumer threads.
+	Pthread_cond_broadcast(&fill); //Wake-up all the sleeping consumer threads.
 	return 0;
 }
 /////////////////////////////////////////////////////////////////////////
@@ -238,8 +207,8 @@ void *consumer(){
 	do{
 		Pthread_mutex_lock(&lock);
 		while(q_size==0 && isComplete==0){
-		    pthread_cond_signal(&empty);
-			pthread_cond_wait(&fill,&lock); //call the producer to start filling the queue.
+		    Pthread_cond_signal(&empty);
+			Pthread_cond_wait(&fill,&lock); //call the producer to start filling the queue.
 		}
 		if(isComplete==1 && q_size==0){ //If producer is done mapping and there's nothing left in the queue.
 			Pthread_mutex_unlock(&lock);
@@ -247,7 +216,7 @@ void *consumer(){
 		}
 		struct buffer temp=get();
 		if(isComplete==0){
-		    pthread_cond_signal(&empty);
+		    Pthread_cond_signal(&empty);
 		}	
 		Pthread_mutex_unlock(&lock);
 		//Output position calculation
@@ -337,9 +306,9 @@ int main(int argc, char* argv[]){
     }
     Pthread_join(pid,NULL);
 	printOutput();
-	pthread_mutex_destroy(&lock);
-	pthread_cond_destroy(&empty);
-	pthread_cond_destroy(&fill);
+	Pthread_mutex_destroy(&lock);
+	Pthread_cond_destroy(&empty);
+	Pthread_cond_destroy(&fill);
 	freeMemory();
 	return 0;
 }

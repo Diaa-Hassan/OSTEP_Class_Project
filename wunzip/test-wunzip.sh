@@ -5,6 +5,6 @@ if ! [[ -x wunzip ]]; then
     exit 1
 fi
 
-../../tester/run-tests.sh $*
+../tester/run-tests.sh $*
 
 

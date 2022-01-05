@@ -51,12 +51,12 @@ int rc=pthread_join(thread,value_ptr);
 assert(rc==0);
 }
 
-void Pthread_mutex_init(pthread_mutex_t *mutex,void* attr){
+void Pthread_mutex_init(pthread_mutex_t *mutex, pthread_mutexattr_t * attr){
 int rc=pthread_mutex_init(mutex,attr);
 	assert(rc==0);
 	}
 	
-void Pthread_cond_init(pthread_cond_t *cond,void* attr){
+void Pthread_cond_init(pthread_cond_t *cond,pthread_condattr_t * attr){
 int rc=pthread_cond_init(cond,attr);
 	assert(rc==0);
 	}

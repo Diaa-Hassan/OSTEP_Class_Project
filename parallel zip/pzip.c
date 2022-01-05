@@ -8,6 +8,7 @@
 #include <sys/stat.h> //Library for struct stat
 #include <sys/sysinfo.h>
 #include <unistd.h>
+#include <assert.h>
 ///////////////////////////////////////////////////
 
 
@@ -23,9 +24,42 @@ int q_tail=0; //Circular queue tail.
 #define q_capacity 10 //Circular queue current size. We can not have static array 
 //for buf which size is given as a variable, so use define. 
 int q_size=0; //Circular queue capacity.
-pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER, filelock=PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t empty = PTHREAD_COND_INITIALIZER, fill = PTHREAD_COND_INITIALIZER;
+
+pthread_mutex_t lock;
+pthread_cond_t empty , fill;
 int* pages_per_file;
+
+/////////////////////WRAPPER FUNCTIONS////////////////////////////
+// wrapper function are a way of making sure that our function calls work fine while also maintaining clean code 
+void Pthread_mutex_lock(pthread_mutex_t *mutex){
+int rc = pthread_mutex_lock(mutex);
+assert(rc ==0);
+}
+
+void Pthread_mutex_unlock(pthread_mutex_t *mutex){
+int rc = pthread_mutex_unlock(mutex);
+assert(rc ==0);
+}
+
+void Pthread_create(pthread_t *thread, const pthread_attr_t * attr, void * (*start_routine)(void*), void * arg){
+int rc = pthread_create(thread,attr,start_routine,arg);
+assert(rc ==0);
+}
+
+void Pthread_join(pthread_t thread, void **value_ptr){
+int rc=pthread_join(thread,value_ptr);
+assert(rc==0);
+}
+
+void Pthread_mutex_init(pthread_mutex_t *mutex,void* attr){
+int rc=pthread_mutex_init(mutex,attr);
+	assert(rc==0);
+	}
+	
+void Pthread_cond_init(pthread_cond_t *cond,void* attr){
+int rc=pthread_cond_init(cond,attr);
+	assert(rc==0);
+	}
 /////////////////////////////////////////////////////////
 
 /////////////////STRUCTURES///////////////////////////////
@@ -127,12 +161,12 @@ void* producer(void *arg){
     	
     	//Step 6: For all the pages in file, create a Buffer type data with the relevant information for the consumer.
 		for(int j=0;j<pages_in_file;j++){
-			pthread_mutex_lock(&lock);
+			Pthread_mutex_lock(&lock);
 			while(q_size==q_capacity){
 			    pthread_cond_broadcast(&fill); //if it's full Wake-up all the sleeping consumer threads.
 				pthread_cond_wait(&empty,&lock); //Call the consumer to start working on the queue.
 			}
-			pthread_mutex_unlock(&lock);
+			Pthread_mutex_unlock(&lock);
 			struct buffer temp;
 			if(j==pages_in_file-1){ //Last page, might not be page-alligned
 				temp.last_page_size=last_page_size;
@@ -146,9 +180,9 @@ void* producer(void *arg){
 			
 			map+=page_size; //Go to next page in the memory.
 			//possible race condition while changing size.
-			pthread_mutex_lock(&lock);
+			Pthread_mutex_lock(&lock);
 			put(temp);
-			pthread_mutex_unlock(&lock);
+			Pthread_mutex_unlock(&lock);
 			pthread_cond_signal(&fill);
 		}
 		
@@ -202,20 +236,20 @@ int calculateOutputPosition(struct buffer temp){
 //of the files in the queue 'buf'
 void *consumer(){
 	do{
-		pthread_mutex_lock(&lock);
+		Pthread_mutex_lock(&lock);
 		while(q_size==0 && isComplete==0){
 		    pthread_cond_signal(&empty);
 			pthread_cond_wait(&fill,&lock); //call the producer to start filling the queue.
 		}
 		if(isComplete==1 && q_size==0){ //If producer is done mapping and there's nothing left in the queue.
-			pthread_mutex_unlock(&lock);
+			Pthread_mutex_unlock(&lock);
 			return NULL;
 		}
 		struct buffer temp=get();
 		if(isComplete==0){
 		    pthread_cond_signal(&empty);
 		}	
-		pthread_mutex_unlock(&lock);
+		Pthread_mutex_unlock(&lock);
 		//Output position calculation
 		int position=calculateOutputPosition(temp);
 		out[position]=RLECompress(temp);
@@ -280,21 +314,32 @@ int main(int argc, char* argv[]){
 	pages_per_file=malloc(sizeof(int)*num_files); //Pages per file.
 	
     out=malloc(sizeof(struct output)* 512000*2); 
+	//dynamically initialize the mutex lock
+	Pthread_mutex_init(&lock,NULL);
+	
+	//dynamically initialize the conditional variables
+	Pthread_cond_init(&empty,NULL);
+	
+	Pthread_cond_init(&fill,NULL);
+	
 	//Create producer thread to map all the files.
 	pthread_t pid,cid[total_threads];
-	pthread_create(&pid, NULL, producer, argv+1); //argv + 1 to skip argv[0].
+	Pthread_create(&pid, NULL, producer, argv+1); //argv + 1 to skip argv[0].
 
 	//Create consumer thread to compress all the pages per file.
 	for (int i = 0; i < total_threads; i++) {
-        pthread_create(&cid[i], NULL, consumer, NULL);
+        Pthread_create(&cid[i], NULL, consumer, NULL);
     }
 
     //Wait for producer-consumers to finish. so that you don't print output until the job is done
     for (int i = 0; i < total_threads; i++) {
-        pthread_join(cid[i], NULL);
+        Pthread_join(cid[i], NULL);
     }
-    pthread_join(pid,NULL);
+    Pthread_join(pid,NULL);
 	printOutput();
+	pthread_mutex_destroy(&lock);
+	pthread_cond_destroy(&empty);
+	pthread_cond_destroy(&fill);
 	freeMemory();
 	return 0;
 }

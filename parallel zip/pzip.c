@@ -171,10 +171,10 @@ void* producer(void *arg){
 struct output RLECompress(struct buffer temp){
 	struct output compressed;    
 	compressed.count=malloc(temp.last_page_size*sizeof(int)); //the size is determined by the worst case scenario (if there is no repeated consecutive characters)
-	char* tempString=malloc(temp.last_page_size);  //also worst case scenario size 
+	compressed.data=malloc(temp.last_page_size);  //also worst case scenario size 
 	int countIndex=0;
 	for(int i=0;i<temp.last_page_size;i++){
-		tempString[countIndex]=temp.address[i];  // points to the first character in page
+		compressed.data[countIndex]=temp.address[i];  // points to the first character in page
 		compressed.count[countIndex]=1;
 		while(i+1<temp.last_page_size && temp.address[i]==temp.address[i+1]){
 			compressed.count[countIndex]++;  //increment the count until another character comes next 
@@ -184,7 +184,7 @@ struct output RLECompress(struct buffer temp){
 	}
 	compressed.size=countIndex; 
 	compressed.count=realloc(compressed.count, countIndex*sizeof(int)); //resize a block of memory that was previously allocated to it's proper size
-	compressed.data=realloc(tempString,countIndex); // resize a block of memory that was previously allocated to it's proper size
+	compressed.data=realloc(compressed.data,countIndex); // resize a block of memory that was previously allocated to it's proper size
 	return compressed;
 }
 
@@ -281,7 +281,7 @@ int main(int argc, char* argv[]){
 	num_files=argc-1; //Number of files, needed for producer.
 	total_threads=get_nprocs(); //Number of processes consumer threads 
 	pages_per_file=malloc(sizeof(int)*num_files); //Pages per file.
-	
+	// the default stack size for threads running 64-bit code is 4MB and 1MB for 32-bit code
     out=malloc(sizeof(struct output)* 512000*2); 
 	//dynamically initialize the mutex lock
 	Pthread_mutex_init(&lock,NULL);

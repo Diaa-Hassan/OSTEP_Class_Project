@@ -16,7 +16,7 @@ int main(int argc , char *argv[]) {
     exit(1);
   }
 
-  if (argc < 3) {                    			 	// only have one file to search within .           
+  if (argc < 3) {                    			 	// only have the search word and no file to search within, so it will search in the standard input file.           
     search_file(argv[1], stdin);
   } 
   else {                             				// if more than one file .

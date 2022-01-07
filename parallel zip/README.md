@@ -103,6 +103,13 @@ prompt> chmod u+x ./test-pzip.sh
 prompt> ./test-pzip.sh
 ```
 
+The ```pzip``` utility expression take the following form:
+
+```sh
+./pzip filename.txt > filename.z
+``` 
+
+
 the output will be in the following form
 
 ```bash
@@ -114,10 +121,9 @@ test 5: passed
 test 6: passed
 ```
 
+photos of the output :
 ![photo_2022-01-07_23-44-51](https://user-images.githubusercontent.com/66523119/148611860-5e961c14-0b74-4fb1-9a40-e6cafe471d14.jpg)
+![photo_2022-01-07_23-44-42](https://user-images.githubusercontent.com/66523119/148612360-a6f34321-a4f5-4c96-9e7f-c269bd62e1e1.jpg)
 
-The ```pzip``` utility expression take the following form:
 
-```sh
-./pzip filename.txt > filename.z
-```
+

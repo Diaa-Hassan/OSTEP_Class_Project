@@ -9,12 +9,12 @@ In this project we aim to improve the performance the previous simpler version t
 **Threading advantages:**
 
 1. Makes a single process faster
-
 2. Threads don't require new address spaces.
+3. Improve CPU performance and reduce the turnaround time as shown in the test run of both ```wzip``` program and ```pzip``` program:
 
-3. Improve CPU performance and reduce the turnaround time
+![](C:\Users\منة\Downloads\photo1641590140.jpeg)
 
-   
+![photo1641590139](C:\Users\منة\Downloads\photo1641590139.jpeg)
 
 **We use multiple concepts that we learned about in the following chapters:**
 
@@ -122,6 +122,3 @@ The ```pzip``` utility expression take the following form:
 ```sh
 ./pzip filename.txt > filename.z
 ```
-
-
-

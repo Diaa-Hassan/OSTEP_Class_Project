@@ -12,7 +12,7 @@ In this project we aim to improve the performance the previous simpler version t
 2. Threads don't require new address spaces.
 3. Improve CPU performance and reduce the turnaround time as shown in the test run of both ```wzip``` program and ```pzip``` program:
 
-![](C:\Users\منة\Downloads\photo1641590140.jpeg)
+![](../wzip.jpeg)
 
 ![photo1641590139](C:\Users\منة\Downloads\photo1641590139.jpeg)
 

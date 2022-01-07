@@ -12,9 +12,6 @@ In this project we aim to improve the performance the previous simpler version t
 2. Threads don't require new address spaces.
 3. Improve CPU performance and reduce the turnaround time as shown in the test run of both ```wzip``` program and ```pzip``` program:
 
-https://github.com/BU9D4DDY/OSTEP_Class_Project/blob/main/parallel%20zip/wzip.jpeg?raw=true
-
-![photo1641590139](C:\Users\منة\Downloads\photo1641590139.jpeg)
 
 **We use multiple concepts that we learned about in the following chapters:**
 
@@ -116,6 +113,8 @@ test 4: passed
 test 5: passed
 test 6: passed
 ```
+
+![photo_2022-01-07_23-44-51](https://user-images.githubusercontent.com/66523119/148611860-5e961c14-0b74-4fb1-9a40-e6cafe471d14.jpg)
 
 The ```pzip``` utility expression take the following form:
 

@@ -24,7 +24,7 @@ prompt> gcc -o wgrep wgrep.c -Wall
 
 this will produce a binary file named `wgrep` which we will use.
 
-To run the tests we firstly have to give a running permission for the bash script `test-wcat.sh`
+To run the tests we firstly have to give a running permission for the bash script `test-wgrep.sh`
 
 ```bash
 prompt> chmod u+x ./test-wgrep.sh

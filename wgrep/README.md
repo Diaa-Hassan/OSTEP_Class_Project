@@ -46,7 +46,7 @@ test 7: passed
 The wgrep utility expression take the following form:
 
 ```sh
-./wcat "Term To Search For" file1 [FILE2]
+./wgrep "Term To Search For" file1 [FILE2]
 ```
 
 **To Search a File**

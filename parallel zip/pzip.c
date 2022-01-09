@@ -1,20 +1,6 @@
-///////////////////Libraries///////////////////////
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include<string.h>
-#include <sys/mman.h> //Library for mmap
-#include <pthread.h>
-#include <sys/stat.h> //Library for struct stat
-#include <sys/sysinfo.h>
-#include <unistd.h>
-#include <assert.h>
+ 
 #include "thread_assert.h" // includes the header file of the wrapper functions
-///////////////////////////////////////////////////
-
-
-
-/////////////////GLOBAL VARIABLES////////////////////////
+ 
 int total_threads; //Total number of threads that will be created for consumer.
 int page_size; //Page size = 4096 Bytes
 int num_files; //Total number of the files passed as the arguments.
@@ -29,11 +15,6 @@ int q_size=0; //Circular queue capacity.
 pthread_mutex_t lock;
 pthread_cond_t empty , fill;
 int* pages_per_file;
-
-/////////////////////////////////////////////////////////
-
-/////////////////STRUCTURES///////////////////////////////
-
 //Contains the compressed output
 struct output {
 	char* data;   //containes the characters
@@ -49,10 +30,7 @@ struct buffer {
     int last_page_size; //Page sized or (size_of_file)%page_size
 }buf[q_capacity];
 
-
-////////////////////////////////////////////////////////
-
-/////////////////QUEUE Functions////////////////////////
+ 
 
 //buf is the Buffer queue. Queue capacity by default = 10
 //Add at q_head index of the circular queue. 
@@ -70,9 +48,7 @@ struct buffer get(){
   	return b;
 }
 
-////////////////////////////////////////////////////////
-
-////////////////////////PRODUCER/////////////////////////
+ 
 //Producer function to memory map the files passed as arguments.
 void* producer(void *arg){
 	//Step 1: Get the file.
@@ -163,10 +139,7 @@ void* producer(void *arg){
 	Pthread_cond_broadcast(&fill); //Wake-up all the sleeping consumer threads.
 	return 0;
 }
-/////////////////////////////////////////////////////////////////////////
-
-///////////////////////////CONSUMER/////////////////////////////////////
-
+ 
 //Compresses the buffer object.
 struct output RLECompress(struct buffer temp){
 	struct output compressed;    
@@ -226,10 +199,7 @@ void *consumer(){
 	return NULL;
 }
 
-////////////////////////////////////////////////////////////////////////
-
-///////////////////////////Main/////////////////////////////////////////
-
+ 
 void printOutput(){
 	char* finalOutput=malloc(total_pages*page_size*(sizeof(int)+sizeof(char))); 
     char* init=finalOutput; //contains the starting point of finalOutput pointer
@@ -273,16 +243,13 @@ int main(int argc, char* argv[]){
 		exit(1);
 	}
 
-	//Initialize all the global Variables.
-	//we took 4096 as page size but the program was running very slow,
-	//started trying out with huge random values, program execution
-	//decreased by atleast 1/4
+	 
 	page_size = 10000000;//sysconf(_SC_PAGE_SIZE); //4096 bytes
 	num_files=argc-1; //Number of files, needed for producer.
 	total_threads=get_nprocs(); //Number of processes consumer threads 
 	pages_per_file=malloc(sizeof(int)*num_files); //Pages per file.
-	
-    out=malloc(sizeof(struct output)* 512000*2); 
+	// the default stack size for threads running 64-bit code is 4MB and 1MB for 32-bit code
+    out=malloc(sizeof(struct output)* 1000000); 
 	//dynamically initialize the mutex lock
 	Pthread_mutex_init(&lock,NULL);
 	
@@ -312,4 +279,3 @@ int main(int argc, char* argv[]){
 	freeMemory();
 	return 0;
 }
-//////////////////////////////////////////////////////////////////////////

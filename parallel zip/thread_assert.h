@@ -1,6 +1,14 @@
 #ifndef _thread_assert_h
 #define _thread_assert_h
 #include <assert.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include<string.h>
+#include <sys/mman.h> //Library for mmap
+#include <sys/stat.h> //Library for struct stat
+#include <sys/sysinfo.h>
+#include <unistd.h>
 #include <pthread.h>
 void Pthread_mutex_lock(pthread_mutex_t *mutex);
 void Pthread_mutex_unlock(pthread_mutex_t *mutex);
